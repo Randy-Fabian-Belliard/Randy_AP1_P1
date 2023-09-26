@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Randy_AP1_P1;
+using Radzen;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ var ConStr = builder.Configuration.GetConnectionString("ConStr");
 //En los  constructores donde lo solicitemos
 builder.Services.AddDbContext<Contexto>(Op => Op.UseSqlite(ConStr));
 
+builder.Services.AddScoped<NotificationService>();
 
 var app = builder.Build();
 
