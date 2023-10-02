@@ -1,0 +1,89 @@
+@page "/R_Aportes"
+@inject AportesBLL AportesBLL
+
+<EditForm Model="aportes" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator/>
+    <div class="card">
+        <div class="card-header">
+            <h1>Registro de Aportes</h1>
+        </div>
+        <div class="card-body">
+
+            <!-- Para el Id -->
+            <label class="form-label">Aporte Id</label>
+            <div id="inputId" class="input-group mb-3">
+                <InputNumber @bind-Value="aportes.AportesId" class="form-control"/>
+                <div class="input-group-append">
+                    <button class="btn btn-info" type="button" @onclick="Buscar"> <span class="oi oi-magnifying-glass"/></button>
+                </div>
+            </div>
+
+            <label class="form-label" for="Fecha">Fecha:</label>
+            <InputDate @bind-Value="aportes.Fecha" class="form-control" />
+            <ValidationMessage For="@(() => aportes.Fecha)" />
+
+            
+            <label class="form-label" for="Persona">Persona:</label>
+            <InputText @bind-Value="aportes.Persona" class="form-control"/>
+            <ValidationMessage For="@(() => aportes.Persona)" />
+
+
+            <label class="form-label" for="Observacion">Observacion:</label>
+            <InputText @bind-Value="aportes.Observacion" class="form-control" />
+            <ValidationMessage For="@(() => aportes.Observacion)" />
+
+            <label class="form-label" for="Monto">Monto:</label>
+            <InputNumber @bind-Value="aportes.Monto" class="form-control" />
+            <ValidationMessage For="@(() => aportes.Monto)" />
+
+
+        </div>
+        <div class="card-footer">
+            <button type="button" class="btn btn-primary" @onclick="New"><i class="oi oi-file" />Nuevo</button>
+            <button type="submit" class="btn btn-success"><i class="oi oi-document" />Guardar</button>
+            <button type="button" class="btn btn-danger" @onclick="Eliminar"><i class="oi oi-trash" />Eliminar</button>
+        </div>
+    </div>
+</EditForm>
+
+@code{
+
+    public Aportes aportes { get; set; } = new Aportes();
+
+    void Guardar()
+    {
+        if (Validar())
+        {
+            if (AportesBLL.Guardar(aportes))
+                New();
+        }
+    }
+
+    void Eliminar()
+    {
+        if (AportesBLL.Eliminar(aportes))
+        {
+            this.New();
+        }
+    }
+
+    void New()
+    {
+        aportes = new Aportes();
+    }
+
+    bool Validar()
+    {
+        return !(String.IsNullOrEmpty(aportes.Persona)) && aportes.Fecha == DateTime.Today && aportes.Monto > 0;
+    }
+
+    void Buscar()
+    {
+        var AportesEncontrado = AportesBLL.Buscar(aportes.AportesId);
+
+        if (AportesEncontrado != null)
+        {
+            this.aportes = AportesEncontrado;
+        }
+    }
+}
