@@ -17,7 +17,7 @@ var ConStr = builder.Configuration.GetConnectionString("ConStr");
 //Inyectar el contexto para que este disponible
 //En los  constructores donde lo solicitemos
 builder.Services.AddDbContext<Contexto>(Op => Op.UseSqlite(ConStr));
-
+builder.Services.AddScoped<AportesBLL>();
 builder.Services.AddScoped<NotificationService>();
 
 var app = builder.Build();
