@@ -1,0 +1,50 @@
+@page "/C_Aportes"
+@inject AportesBLL AportesBLL
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Aporte Id</th>
+            <th>Fecha</th>
+            <th>Persona</th>
+            <th>Observacion</th>
+            <th>Monto</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in L_Aportes)
+        {
+            <tr>
+                <td>@item.AportesId</td>
+                <td>@item.Fecha</td>
+                <td>@item.Persona</td>
+                <td>@item.Observacion</td>
+                <td>@item.Monto</td>
+            </tr>
+        }
+
+        <div>
+            <p>Conteo: @Conteo</p>
+        </div>
+        <div>
+            <p>Total: @SumaMontos</p>
+        </div>
+    </tbody>
+</table>
+
+@code{
+
+    public List<Aportes> L_Aportes { get; set; } = new List<Aportes>();
+
+    public decimal SumaMontos { get; set; }
+
+    public int Conteo { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        L_Aportes = AportesBLL.Listar(c => true);
+        SumaMontos = L_Aportes.Sum(aportes => aportes.Monto);
+        Conteo = L_Aportes.Sum(aportes => aportes.Conteo);
+    }
+}
