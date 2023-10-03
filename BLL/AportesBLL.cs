@@ -22,6 +22,7 @@ public class AportesBLL
     {
         _contexto.Aportes.Remove(aportes);
         int eliminado = _contexto.SaveChanges();
+        _contexto.Aportes.Entry(aportes).State = EntityState.Detached;
         return eliminado > 0;
     }
 
@@ -29,6 +30,7 @@ public class AportesBLL
     {
         _contexto.Aportes.Add(aportes);
         int guardado = _contexto.SaveChanges();
+        _contexto.Aportes.Entry(aportes).State = EntityState.Detached;
         return guardado > 0;
     }
 

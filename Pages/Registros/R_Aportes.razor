@@ -1,5 +1,7 @@
 @page "/R_Aportes"
+@page "/R_Aportes/{AporteId:int}"
 @inject AportesBLL AportesBLL
+@inject NotificationService notificationService
 
 <EditForm Model="aportes" OnValidSubmit="Guardar">
     <DataAnnotationsValidator/>
@@ -41,22 +43,60 @@
         <div class="card-footer">
             <button type="button" class="btn btn-primary" @onclick="New"><i class="oi oi-file" />Nuevo</button>
             <button type="submit" class="btn btn-success"><i class="oi oi-document" />Guardar</button>
-            <button type="button" class="btn btn-danger" @onclick="Eliminar"><i class="oi oi-trash" />Eliminar</button>
+            <button type="button" class="btn btn-danger"  @onclick="Eliminar"><i class="oi oi-trash" />Eliminar</button>
         </div>
     </div>
 </EditForm>
 
 @code{
 
-    public Aportes aportes { get; set; } = new Aportes();
+    [Parameter]
+    public int AporteId { get; set; }
+    public void NotificationSave()
+    {
+        var mensaje = new NotificationMessage{
+            Severity = NotificationSeverity.Success,
+            Summary = "El aporte fue guardado",
+            Detail = "Gracias :)",
+            Duration = 4_000
+        };
+        notificationService.Notify(mensaje);
+    }
+
+        public void NotificationDeleted()
+    {
+        var mensaje = new NotificationMessage{
+            Severity = NotificationSeverity.Warning,
+            Summary = "El aporte fue eliminado",
+            Detail = "",
+            Duration = 4_000
+        };
+        notificationService.Notify(mensaje);
+    }
+
+        protected override void OnInitialized()
+        {
+            if(AporteId > 0)
+            {
+                aportes.AportesId = AporteId;
+                Buscar();
+            }
+        }
+
+        public Aportes aportes { get; set; } = new Aportes();
 
     void Guardar()
     {
-        if (Validar())
+        if(!Validar())
         {
             if (AportesBLL.Guardar(aportes))
+            {
                 New();
+                NotificationSave();
+            }
         }
+                
+        
     }
 
     void Eliminar()
@@ -64,6 +104,7 @@
         if (AportesBLL.Eliminar(aportes))
         {
             this.New();
+            NotificationDeleted();
         }
     }
 
@@ -74,7 +115,16 @@
 
     bool Validar()
     {
-        return !(String.IsNullOrEmpty(aportes.Persona)) && aportes.Fecha == DateTime.Today && aportes.Monto > 0;
+        if(aportes.AportesId < 0)
+            return false;
+        else if(string.IsNullOrEmpty(aportes.Persona))
+            return false;
+        else if(string.IsNullOrEmpty(aportes.Observacion))
+            return false;
+        else if(aportes.Monto > 0)
+            return false;
+        else
+            return true;
     }
 
     void Buscar()

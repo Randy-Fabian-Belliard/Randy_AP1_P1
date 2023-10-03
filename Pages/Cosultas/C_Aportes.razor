@@ -1,6 +1,47 @@
 @page "/C_Aportes"
 @inject AportesBLL AportesBLL
 
+<div class="card-header">
+    <h2>Consulta de productos</h2>
+    <div class='row'>
+        <div class='col-md-3'>
+            <label>Desde</label>
+            <InputDate @bind-Value="FechaInicial" class="form-control"></InputDate>
+        </div>
+        <div class='col-md-3'>
+            <label>Hasta</label>
+            <div class="finalDate">
+                <InputDate @bind-Value="FechaFinal" class="form-control"></InputDate>
+                <button type="button" class="btn btn-outline-primary oi oi-reload" @onclick="ResetDate"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class='row'>
+        @* Filtro *@
+        <div class='col-md-4'>
+            <label>Filtro</label>
+            <div class="filter-box">
+                <InputSelect class="form-select" @bind-Value="opcion">
+                    <option value=0>Sin filtro</option>
+                    <option value=1>Aporte Id</option>
+                    <option value=2>Nombre</option>
+                </InputSelect>
+                <button type="button" class="btn btn-outline-primary oi oi-reload" @onclick="ReiniciarFiltro"></button>
+            </div>
+        </div>
+    <div class='col-md-6'>
+        @* Criterio *@
+        <label>Criterio</label>
+        <div class="col-md-6">
+            <div class="input-group mb-3">
+                <input id="c_search" type="text" class="form-control" @bind="criterio" disabled="@activarCriterio"/>
+                <button type="button" class="btn btn-info oi oi-magnifying-glass" @onclick="Filtrar"></button>
+            </div>
+        </div>
+    </div>
+</div>
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -20,14 +61,16 @@
                 <td>@item.Persona</td>
                 <td>@item.Observacion</td>
                 <td>@item.Monto</td>
+                <td><a href="/R_Aportes/@item.AportesId"><span class="oi oi-eye"></span></a></td>
             </tr>
         }
-
-        <div>
-            <p>Conteo: @Conteo</p>
-        </div>
-        <div>
-            <p>Total: @SumaMontos</p>
+        <div class="row d-flex justify-content-center">
+            <div class="col-md-6">
+                <p>Conteo: @Conteo</p>
+            </div>
+            <div class="col-md-6">
+                <p>Total: @SumaMontos</p>
+            </div>
         </div>
     </tbody>
 </table>
@@ -35,6 +78,11 @@
 @code{
 
     public List<Aportes> L_Aportes { get; set; } = new List<Aportes>();
+    public DateTime FechaInicial { get; set; }
+    public DateTime FechaFinal { get; set; }
+    public int opcion { get; set; }
+    public bool activarCriterio {get {return opcion == 0;}}
+    public string criterio {get; set;} = string.Empty;
 
     public decimal SumaMontos { get; set; }
 
@@ -44,7 +92,73 @@
     protected override void OnInitialized()
     {
         L_Aportes = AportesBLL.Listar(c => true);
+        Actualizar();
+    }
+
+    void Filtrar()
+    {
+        switch(opcion)
+        {
+            case 0:
+            {
+                SinFiltro();
+                IncluirFecha();
+                Actualizar();
+                break;
+            }
+            case 1:
+            {
+                FiltrarPorAporteId();
+                Actualizar();
+                break;
+            }
+            case 2:
+            {
+                FiltrarPorNombre();
+                Actualizar();
+                break;
+            }
+        }
+    }
+
+    void Actualizar()
+    {
         SumaMontos = L_Aportes.Sum(aportes => aportes.Monto);
         Conteo = L_Aportes.Sum(aportes => aportes.Conteo);
+    }
+    void SinFiltro()
+    {
+        L_Aportes = AportesBLL.Listar(aporte => true);
+        criterio = string.Empty;
+    }
+    void FiltrarPorAporteId()
+    {
+        int IdBuscado = 0;
+        if (int.TryParse(criterio, out IdBuscado))
+        {
+            L_Aportes = AportesBLL.Listar(item => item.AportesId == IdBuscado 
+            && item.Fecha >= FechaInicial && item.Fecha <= FechaFinal);
+        }
+    }
+    void FiltrarPorNombre()
+    {
+        L_Aportes = AportesBLL.Listar(aporte => aporte.Persona.Contains(criterio));
+    }
+    void IncluirFecha()
+    {
+        L_Aportes = AportesBLL.Listar(item => item.Fecha >= FechaInicial && item.Fecha <= FechaFinal);
+    }
+    void ReiniciarFiltro()
+    {
+        if(opcion != 0)
+        {
+            opcion = 0;
+            criterio = string.Empty;
+        }
+    }
+    void ResetDate()
+    {
+        FechaInicial = DateTime.Today;
+        FechaFinal = DateTime.Today;
     }
 }
